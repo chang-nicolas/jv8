@@ -9,10 +9,10 @@ V8Runner v8 = new V8Runner();
 
 v8.map("javaSum", new V8MappableMethod {
   @Override
-  public V8Value methodToRun(V8Value[] args) {
+  public V8Value methodToRun(Object[] args) {
     double sum = 0;
-    for (V8Value val : args) {
-      sum += val.toNumber();
+    for (Number val : args) {
+      sum += val;
     }
     return new v8.val(sum);
   }
@@ -25,10 +25,21 @@ double sum = v8.runJS("(program)", "javaSum(6, 3, 12, 17, 4);").toNumber();
 
 ## Supported types
 
- - `Boolean`
- - `Number`
- - `String`
- - `Function`
+Most native JS types are converted to their native Java equivalent.
+Complex types like `Function` are converted to a jv8 type.
+
+```
+JS              Java
+
+null            null
+undefined       Undefined   (com.jovianware.jv8.V8Undefined)
+Boolean         Boolean
+Number          Number
+String          String
+
+Function        Function    (com.jovianware.jv8.Function)
+```
+
  
 ## Function passing and calling
 
@@ -38,16 +49,16 @@ Javascript can pass a Function to the Java context, and Java can call this funct
 
 v8.map("doSomethingWithFunction", new V8MappableMethod {
   @Override
-  public V8Value methodToRun(V8Value[] args) {
+  public Object methodToRun(Object[] args) {
   
     // Get the function from JS parameters
-    V8Function function = (V8Function)args[0];
+    Function function = (Function)args[0];
     
     // Create a table of arguments to pass
-    V8Value newArgs[] = { new V8Number(8) };
+    Object newArgs[] = { 8 };
     
     // Execute the function with one argument
-    V8Value result = v8.callFunction(function, newArgs);
+    Object result = v8.callFunction(function, newArgs);
     
     // Get the result
     if (result.isNumber()) {
